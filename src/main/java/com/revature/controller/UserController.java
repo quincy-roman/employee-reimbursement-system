@@ -15,7 +15,6 @@ public class UserController {
 	@Autowired
 	UserService userService;
 	
-	
 	/**
 	 * Basic login, takes the full User object
 	 * as parameter. Returns 200 or 401 depending on
