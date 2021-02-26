@@ -22,8 +22,8 @@ public class UserController {
 	 * whether or not the user exists.
 	 * 
 	 * @param
-	 * @return ok, badRequest
-	 * @author qroma
+	 * @return OK, badRequest
+	 * @author qroman
 	 */
 	@PostMapping(path = "/login")
 	public ResponseEntity<Integer> login(@RequestBody User user){

@@ -12,7 +12,7 @@ public class UserService {
 	@Autowired
 	UserRepository userRepo;
 	
-	public int login(String email, String password) {
+	public Integer login(String email, String password) {
 		User u = userRepo.findByEmailAndPassword(email, password);
 		return u.getUserId();
 	}
