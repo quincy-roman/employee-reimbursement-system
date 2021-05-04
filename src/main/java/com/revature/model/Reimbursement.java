@@ -1,6 +1,6 @@
 package com.revature.model;
 
-import java.sql.Timestamp;
+import java.time.LocalDateTime;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -21,14 +21,14 @@ public class Reimbursement {
 	@Id
 	@Column(name="reimbursement_id")
 	@GeneratedValue(strategy=GenerationType.IDENTITY)
-	private int reimbursmentId;
+	private Long reimbursmentId;
 	
 	@Column(name="reimbursement_amount")
 	private double amount;
 	
-	private Timestamp submitted;
+	private LocalDateTime submitted;
 	
-	private Timestamp resolved;
+	private LocalDateTime resolved;
 	
 	private String description;
 	

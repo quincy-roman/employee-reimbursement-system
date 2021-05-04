@@ -1,19 +1,28 @@
 package com.revature.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.revature.excpetion.ERSException;
 import com.revature.model.User;
 import com.revature.service.UserService;
 
 @RestController
+@RequestMapping("/api")
 public class UserController {
 	
+	private final UserService service;
+	
 	@Autowired
-	UserService userService;
+	public UserController(UserService service) {
+		this.service = service;
+	}
 	
 	/**
 	 * Basic login, takes the full User object
@@ -24,17 +33,27 @@ public class UserController {
 	 * @return OK, badRequest
 	 * @author qroman
 	 */
-	@PostMapping(path = "/login")
-	public ResponseEntity<Integer> login(@RequestBody User user){
+	@PostMapping("/login")
+	public ResponseEntity<User> login(@RequestBody User user){
 		
-		Integer id = userService.login(user.getEmail(), user.getPassword());
-		
-		if(id == null) {
-			return ResponseEntity.badRequest().build();
+		try {
+			user = service.login(user.getEmail(), user.getPassword());
+			return ResponseEntity.ok(user);			
+		} catch (ERSException e) {
+			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();	// TODO Might want to return the username used.
 		}
 		
-		return ResponseEntity.ok(id);			
 		
+	}
+	
+	@PostMapping("/users")
+	public ResponseEntity<User> register(@RequestBody User user){
+		try {
+			user = service.register(user);
+			return new ResponseEntity<User>(user, HttpStatus.CREATED);
+		}catch(ERSException e) {
+			return ResponseEntity.badRequest().contentType(MediaType.APPLICATION_PROBLEM_JSON).build();
+		}
 	}
 
 }

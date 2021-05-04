@@ -10,7 +10,7 @@ import com.revature.model.ReimbursementStatus;
 import com.revature.model.ReimbursementType;
 
 @Repository
-public interface ReimbursementRepository extends JpaRepository<Reimbursement, Integer>{
+public interface ReimbursementRepository extends JpaRepository<Reimbursement, Long>{
 	
 	public List<Reimbursement> findAllByStatus(ReimbursementStatus status);
 	
