@@ -55,9 +55,7 @@ class UserServiceTest {
 		user.setUserId(1L);
 		given(repo.findByEmail(user.getEmail())).willReturn(Optional.of(user));
 		
-		assertThrows(ERSException.class, () -> {
-			service.register(user);
-		});
+		assertThrows(ERSException.class, () -> service.register(user));
 		
 		verify(repo, never()).save(any(User.class));
 	}
@@ -80,11 +78,27 @@ class UserServiceTest {
 	void shouldThrowErrorWithBadCreds() {
 		given(repo.findByEmailAndPassword(user.getEmail(), user.getPassword())).willReturn(Optional.empty());
 		
-		assertThrows(ERSException.class, () -> {
-			service.login(user.getEmail(), user.getPassword());
-		});
+		assertThrows(ERSException.class, () -> service.login(user.getEmail(), user.getPassword()));
 		
 		verify(repo).findByEmailAndPassword(any(String.class), any(String.class));
+	}
+	
+	@Test
+	void shouldThrowErrorIfUserDoesNotExistToDelete() {
+		user.setUserId(1L);
+		given(repo.findById(1L)).willReturn(Optional.empty());
+		
+		assertThrows(ERSException.class, () -> service.deleteUser(user.getUserId()));
+		
+		verify(repo, never()).deleteById(user.getUserId());
+	}
+	
+	@Test
+	void shouldThrowErrorIfUserNotFoundById() {
+		user.setUserId(1L);
+		given(repo.findById(1L)).willReturn(Optional.empty());
+		
+		assertThrows(ERSException.class, () -> service.findById(user.getUserId()));
 	}
 
 }

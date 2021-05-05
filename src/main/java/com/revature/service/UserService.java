@@ -31,25 +31,45 @@ public class UserService {
 	 * @throws ERSException
 	 */
 	public User login(String email, String password) throws ERSException {
-		Optional<User> u = repo.findByEmailAndPassword(email, password);
-		if(u.isEmpty()) {
-			throw new ERSException("Service.USER_NOT_FOUND");
+		Optional<User> user = repo.findByEmailAndPassword(email, password);
+		if(user.isEmpty()) {
+			throw new ERSException("Service.FAILED_LOGIN");
 		}
-		return u.get();
+		return user.get();
 	}
 
-	public User register(User u) throws ERSException {
-		Optional<User> user = repo.findByEmail(u.getEmail());
+	public User register(User user) throws ERSException {
+		Optional<User> opUser = repo.findByEmail(user.getEmail());
 		
-		if(user.isPresent()) {
+		if(opUser.isPresent()) {
 			throw new ERSException("Service.USER_EXISTS");
 		}
 		
-		return Optional.of(repo.save(u)).get();
+		return repo.save(user);
 	}
 	
-	public void updateUser(User u) {
+	public User updateUser(Long id) throws ERSException {
+		User user = findById(id);
+		return repo.save(user);
+	}
+	
+	public User deleteUser(Long id) throws ERSException {
+		// Get the user's id, if they exist in the database.
+		User user = findById(id);
+		
+		repo.delete(user);
+		
+		return user;
+	}
 
+	User findById(Long userId) throws ERSException {
+		Optional<User> user = repo.findById(userId);
+		
+		if(user.isEmpty()) {
+			throw new ERSException("Service.USER_NOT_FOUND");
+		}
+		
+		return user.get();
 	}
 	
 

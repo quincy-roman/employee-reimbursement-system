@@ -1,10 +1,13 @@
 package com.revature.controller;
 
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
 import static org.hamcrest.CoreMatchers.is;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
@@ -13,6 +16,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,7 +45,7 @@ class UserControllerTest {
 
 	private List<User> users;
 	
-	private User newUser = new User(null, "email", "password", "first", "last", null);
+	private User newUser;
 
 	@BeforeEach
 	public void init() {
@@ -48,6 +53,7 @@ class UserControllerTest {
 		users.add(new User(1L, "test1@email.com", "pass1", "Tester", "One", null));
 		users.add(new User(2L, "test2@email.com", "pass2", "Teste", "Two", null));
 		users.add(new User(3L, "test3@email.com", "pass3", "Test", "Three", null));
+		newUser = new User(null, "email", "password", "first", "last", null);
 	}
 
 	/**
@@ -85,7 +91,7 @@ class UserControllerTest {
 		this.mockMvc.perform(post("/api/login")
 							.contentType("application/json")
 							.content(mapper.writeValueAsString(badUser)))
-						.andExpect(status().isUnauthorized());
+					.andExpect(status().isUnauthorized());
 	}
 	
 	/**
@@ -125,6 +131,49 @@ class UserControllerTest {
 					.andDo(print())
 					.andExpect(status().isBadRequest())
 					.andExpect(header().string("Content-Type", is("application/problem+json")));
+	}
+	
+	@Test
+	void shouldUpdateUser() throws Exception {
+		newUser.setUserId(1L);
+		newUser.setEmail("new-email@email.com");
+		given(service.updateUser(newUser.getUserId())).willReturn(newUser);
+		
+		this.mockMvc.perform(put("/api/users/{id}", newUser.getUserId()))
+					.andDo(print())
+					.andExpect(status().isCreated())
+					.andExpect(content().contentType(MediaType.APPLICATION_JSON))
+					.andExpect(jsonPath("$.email", is(newUser.getEmail())))
+					.andExpect(jsonPath("$.password", is(newUser.getPassword())))
+					.andExpect(jsonPath("$.firstName", is(newUser.getFirstName())))
+					.andExpect(jsonPath("$.lastName", is(newUser.getLastName())));
+	}
+	
+	@Test
+	void shouldReturn404WhenUpdatingNonExistingUser() throws Exception {
+		given(service.updateUser(any(Long.class))).willThrow(ERSException.class);
+		
+		this.mockMvc.perform(put("/api/users/{id}", 1L))
+					.andDo(print())
+					.andExpect(status().isNotFound());
+	}
+	
+	@Test
+	void shouldDeleteUser() throws Exception {
+		newUser.setUserId(1L);
+		given(service.deleteUser(1L)).willReturn(newUser);
+		
+		this.mockMvc.perform(delete("/api/users/{id}", newUser.getUserId()))
+					.andDo(print())
+					.andExpect(status().isOk());
+	}
+	
+	@Test
+	void shouldReturn404WhenDeletingNonExistingUser() throws Exception {
+		given(service.deleteUser(any(Long.class))).willThrow(ERSException.class);
+		
+		this.mockMvc.perform(delete("/api/users/{id}", 1L))
+					.andExpect(status().isNotFound());
 	}
 
 }
